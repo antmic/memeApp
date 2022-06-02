@@ -6,10 +6,15 @@ export const ContainerAddMeme = () => {
 		console.log(input);
 	};
 
-	return (
-		<div>
-			<Link to='/'>See Meme</Link>
+	return (<div className='addMemeDiv'>
+		<div className='backLinkDiv'>
+			<Link className='backLink' to='/'>
+				Back
+			</Link>
+		</div>
+		<div className='inputDiv'>
 			<AddMeme onInput={onInput} />
 		</div>
+	</div>
 	);
 };

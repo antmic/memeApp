@@ -27,11 +27,10 @@ export const AddMeme = props => {
 		navigate('/');
 	};
 	return (
-		<div>
-			Paste link to meme:
-			<input value={memeTitle} placeholder='Meme title' onChange={event => setMemeTitle(event.target.value)}></input>
-			<input value={memeUrl} placeholder='Link to meme' onChange={event => setMemeUrl(event.target.value)}></input>
-			<button onClick={InputHandler}>Add meme</button>
+		<div className='inputDiv'>
+			<input className='input' value={memeTitle} placeholder='title' onChange={event => setMemeTitle(event.target.value)}></input>
+			<input className='input' value={memeUrl} placeholder='link' onChange={event => setMemeUrl(event.target.value)}></input>
+			<button className='inputBtn' onClick={InputHandler}>Add meme</button>
 		</div>
 	);
 };

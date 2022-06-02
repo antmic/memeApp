@@ -5,6 +5,9 @@ const router = express.Router();
 app.use(cors());
 const port = 3002;
 
+//--------------------------------------------------------------------------------------
+//MONGO
+
 const { MongoClient, ObjectId } = require('mongodb');
 
 // uri string is MongoDB deployment's connection string.
@@ -12,57 +15,37 @@ const uri = 'mongodb+srv://User:UserPassword@memes.vyfgc.mongodb.net/?retryWrite
 
 const client = new MongoClient(uri);
 
-async function upvoteToDB(memeId) {
+async function upvoteToDB(memeId, voteValue) {
 	try {
-		console.log('memeId is ', memeId);
 		memeId = new ObjectId(memeId);
-		console.log('new memeId is ', memeId);
 		await client.connect();
 		const database = client.db('Memes');
 		const memesCollection = database.collection('Memes');
-		//const filter = { _id: memeId };
-		//const update = { $inc: { upvotes: 1 } };
-		//const update = { $set: { upvotes: 'upvoted' } };
-		// const vote = await memesCollection.findOneAndUpdate(filter, update);
 		const vote = await memesCollection.findOneAndUpdate(
 			{ _id: memeId },
-			{ $inc: { upvotes: 1 } },
-			// { new: true },
+			{ $inc: { upvotes: voteValue } },
 			{ returnDocument: 'after' }
 		);
-		//.toArray();
-		console.log('vote is: ---', vote);
 		return vote;
 	} finally {
-		// Ensures that the client will close when you finish/error
-		//await client.close();
+		//client.close();
 	}
 }
 
-async function downvoteToDB(memeId) {
+async function downvoteToDB(memeId, voteValue) {
 	try {
-		console.log('memeId is ', memeId);
 		memeId = new ObjectId(memeId);
-		console.log('new memeId is ', memeId);
 		await client.connect();
 		const database = client.db('Memes');
 		const memesCollection = database.collection('Memes');
-		//const filter = { _id: memeId };
-		//const update = { $inc: { upvotes: 1 } };
-		//const update = { $set: { upvotes: 'upvoted' } };
-		// const vote = await memesCollection.findOneAndUpdate(filter, update);
 		const vote = await memesCollection.findOneAndUpdate(
 			{ _id: memeId },
-			{ $inc: { downvotes: -1 } },
-			// { new: true },
+			{ $inc: { downvotes: voteValue } },
 			{ returnDocument: 'after' }
 		);
-		//.toArray();
-		console.log('vote is: ---', vote);
 		return vote;
 	} finally {
-		// Ensures that the client will close when you finish/error
-		//await client.close();
+		//client.close();
 	}
 }
 
@@ -79,11 +62,7 @@ async function addToDB(memeData) {
 			downvotes: 0,
 		});
 	} finally {
-		// Ensures that the client will close when you finish/error
-		//await client.close();
-		setTimeout(() => {
-			client.close();
-		}, 1500);
+		//client.close();
 	}
 }
 
@@ -92,7 +71,6 @@ async function giveMemes(num) {
 		await client.connect();
 		const database = client.db('Memes');
 		const memesCollection = database.collection('Memes');
-
 		// Get random record from collection.
 		const memes = await memesCollection
 			.aggregate([
@@ -100,42 +78,15 @@ async function giveMemes(num) {
 				{ $sample: { size: num } },
 			])
 			.toArray();
-
 		const objectURL = { memes };
-
 		return objectURL;
 	} finally {
-		// Ensures that the client will close when you finish/error
-		await client.close();
+		//client.close();
 	}
 }
 
-// async function giveHotMemes(num) {
-// 	try {
-// 		await client.connect();
-// 		const database = client.db('Memes');
-// 		const memesCollection = database.collection('Memes');
-
-// 		// Get random record from collection.
-// 		const memes = await memesCollection
-// 			.aggregate([
-// 				{ $match: { url: { $exists: true } } }, //ommits documents without url field
-// 				{ $match: { upvotes: { $gt: 5 } } }, //selects memes with upvote count greater that 5
-// 				{ $sample: { size: num } },
-// 			])
-// 			.toArray();
-
-// 		const objectURL = { memes };
-
-// 		return objectURL;
-// 	} finally {
-// 		// Ensures that the client will close when you finish/error
-// 		await client.close();
-// 	}
-// }
-
 async function giveHotMemes(num) {
-	const memes = {memes:[]};
+	const memes = { memes: [] };
 	try {
 		await client.connect();
 		const database = client.db('Memes');
@@ -147,20 +98,18 @@ async function giveHotMemes(num) {
 		}
 		return memes;
 	} finally {
-		// Ensures that the client will close when you finish/error
-		await client.close();
+		//client.close();
 	}
 }
 
-var bodyParser = require('body-parser');
+//--------------------------------------------------------------------------------------
+//GET and POST requests
 
-app.use(bodyParser());
+app.use(express.json());
 
 app.get('/1', (req, res) => {
-	//console.log(req);
 	async function sendMemes() {
 		const result = await giveMemes(1);
-		//console.log(result);
 		res.setHeader('Content-Type', 'application/json');
 		res.setHeader('Access-Control-Allow-Origin', '*');
 		res.json(result);
@@ -168,24 +117,19 @@ app.get('/1', (req, res) => {
 	sendMemes();
 });
 
-app.get('/10', (req, res) => {
-	//console.log(req.body);
+app.get('/3', (req, res) => {
 	async function sendMemes() {
-		const result = await giveMemes(10);
-		//console.log(result);
+		const result = await giveMemes(3);
 		res.setHeader('Content-Type', 'application/json');
 		res.setHeader('Access-Control-Allow-Origin', '*');
 		res.json(result);
-		console.log('regular result is: ', result);
 	}
 	sendMemes();
 });
 
 app.get('/hot/1', (req, res) => {
-	//console.log(req);
 	async function sendMemes() {
 		const result = await giveHotMemes(1);
-		//console.log(result);
 		res.setHeader('Content-Type', 'application/json');
 		res.setHeader('Access-Control-Allow-Origin', '*');
 		res.json(result);
@@ -193,23 +137,19 @@ app.get('/hot/1', (req, res) => {
 	sendMemes();
 });
 
-app.get('/hot/10', (req, res) => {
-	//console.log(req.body);
+app.get('/hot/3', (req, res) => {
 	async function sendMemes() {
-		const result = await giveHotMemes(10);
-		//console.log(result);
+		const result = await giveHotMemes(3);
 		res.setHeader('Content-Type', 'application/json');
 		res.setHeader('Access-Control-Allow-Origin', '*');
 		res.json(result);
-		console.log('hot result is: ', result);
 	}
 	sendMemes();
 });
 
 app.post('/upvote', (req, res) => {
-	if (req.body.vote === 1) {
-		console.log('upvote sent to database, ----', req.body.id);
-		const vote = upvoteToDB(req.body.id);
+	if (req.body.vote === 1 || req.body.vote === -1) {
+		const vote = upvoteToDB(req.body.id, req.body.vote);
 		async function postConfirm() {
 			const confirmMessage = { message: 'upvote received', newVote: (await vote).value.upvotes };
 			res.setHeader('Content-Type', 'application/json');
@@ -223,9 +163,8 @@ app.post('/upvote', (req, res) => {
 });
 
 app.post('/downvote', (req, res) => {
-	if (req.body.vote === -1) {
-		console.log('downvote sent to database, ----', req.body.id);
-		const vote = downvoteToDB(req.body.id);
+	if (req.body.vote === 1 || req.body.vote === -1) {
+		const vote = downvoteToDB(req.body.id, req.body.vote);
 		async function postConfirm() {
 			const confirmMessage = { message: 'downvote received', newVote: (await vote).value.downvotes };
 			res.setHeader('Content-Type', 'application/json');
@@ -247,7 +186,6 @@ app.post('/add', (req, res) => {
 	}
 	postConfirm();
 	if (req.body.length != 0) {
-		console.log('meme sent to database', req.body);
 		addToDB(req.body);
 	}
 });
