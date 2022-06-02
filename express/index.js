@@ -110,32 +110,100 @@ async function giveMemes(num) {
 	}
 }
 
+// async function giveHotMemes(num) {
+// 	try {
+// 		await client.connect();
+// 		const database = client.db('Memes');
+// 		const memesCollection = database.collection('Memes');
+
+// 		// Get random record from collection.
+// 		const memes = await memesCollection
+// 			.aggregate([
+// 				{ $match: { url: { $exists: true } } }, //ommits documents without url field
+// 				{ $match: { upvotes: { $gt: 5 } } }, //selects memes with upvote count greater that 5
+// 				{ $sample: { size: num } },
+// 			])
+// 			.toArray();
+
+// 		const objectURL = { memes };
+
+// 		return objectURL;
+// 	} finally {
+// 		// Ensures that the client will close when you finish/error
+// 		await client.close();
+// 	}
+// }
+
+async function giveHotMemes(num) {
+	const memes = {memes:[]};
+	try {
+		await client.connect();
+		const database = client.db('Memes');
+		const memesCollection = database.collection('Memes');
+		const pipeline = [{ $match: { upvotes: { $gt: 5 } } }, { $sample: { size: num } }];
+		const aggCursor = memesCollection.aggregate(pipeline);
+		for await (const doc of aggCursor) {
+			memes.memes.push(doc);
+		}
+		return memes;
+	} finally {
+		// Ensures that the client will close when you finish/error
+		await client.close();
+	}
+}
+
 var bodyParser = require('body-parser');
 
 app.use(bodyParser());
 
 app.get('/1', (req, res) => {
 	//console.log(req);
-	async function getURL() {
+	async function sendMemes() {
 		const result = await giveMemes(1);
 		//console.log(result);
 		res.setHeader('Content-Type', 'application/json');
 		res.setHeader('Access-Control-Allow-Origin', '*');
 		res.json(result);
 	}
-	getURL();
+	sendMemes();
 });
 
 app.get('/10', (req, res) => {
 	//console.log(req.body);
-	async function getURL() {
+	async function sendMemes() {
 		const result = await giveMemes(10);
 		//console.log(result);
 		res.setHeader('Content-Type', 'application/json');
 		res.setHeader('Access-Control-Allow-Origin', '*');
 		res.json(result);
+		console.log('regular result is: ', result);
 	}
-	getURL();
+	sendMemes();
+});
+
+app.get('/hot/1', (req, res) => {
+	//console.log(req);
+	async function sendMemes() {
+		const result = await giveHotMemes(1);
+		//console.log(result);
+		res.setHeader('Content-Type', 'application/json');
+		res.setHeader('Access-Control-Allow-Origin', '*');
+		res.json(result);
+	}
+	sendMemes();
+});
+
+app.get('/hot/10', (req, res) => {
+	//console.log(req.body);
+	async function sendMemes() {
+		const result = await giveHotMemes(10);
+		//console.log(result);
+		res.setHeader('Content-Type', 'application/json');
+		res.setHeader('Access-Control-Allow-Origin', '*');
+		res.json(result);
+		console.log('hot result is: ', result);
+	}
+	sendMemes();
 });
 
 app.post('/upvote', (req, res) => {

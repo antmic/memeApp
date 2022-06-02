@@ -1,11 +1,14 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export const AddMeme = props => {
 	const [memeUrl, setMemeUrl] = useState('');
 	const [memeTitle, setMemeTitle] = useState('');
-	const inputHandler = () => {
-		props.onSearchTerm(memeUrl);
-		props.onSearchTerm(memeTitle);
+	const navigate = useNavigate();
+
+	const InputHandler = () => {
+		props.onInput(memeUrl);
+		props.onInput(memeTitle);
 		async function sendMeme() {
 			let result = await fetch('http://127.0.0.1:3002/add', {
 				method: 'post',
@@ -21,13 +24,14 @@ export const AddMeme = props => {
 		sendMeme();
 		setMemeTitle('');
 		setMemeUrl('');
+		navigate('/');
 	};
 	return (
 		<div>
 			Paste link to meme:
 			<input value={memeTitle} placeholder='Meme title' onChange={event => setMemeTitle(event.target.value)}></input>
 			<input value={memeUrl} placeholder='Link to meme' onChange={event => setMemeUrl(event.target.value)}></input>
-			<button onClick={inputHandler}>Add meme</button>
+			<button onClick={InputHandler}>Add meme</button>
 		</div>
 	);
 };

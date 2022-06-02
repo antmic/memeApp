@@ -1,13 +1,13 @@
 import { AddMeme } from './AddMeme';
 
 export const ContainerAddMeme = () => {
-    const onSearchTerm = (searchTerm) => {
-        console.log(searchTerm);
+    const onInput = (input) => {
+        console.log(input);
     };
 
     return (
         <div>
-            <AddMeme onSearchTerm={onSearchTerm} />
+            <AddMeme onInput={onInput} />
         </div>
     );
 };
