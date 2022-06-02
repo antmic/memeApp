@@ -1,13 +1,12 @@
-import './App.css';
+import './App.scss';
 import { Routes, Route, Link } from 'react-router-dom';
-import { ContainerAddMeme } from './pages/ContainerAddMeme';
-import {Memes} from './pages/Main'
+import { ContainerAddMeme } from './pages/addMeme/ContainerAddMeme';
+import {Memes} from './pages/main/Main'
 
 function App() {
 	return (
 		<div className='App'>
-			<Link to='/'>See Meme</Link>
-			<Link to='/add-meme'>Add Meme</Link>
+
 			<Routes>
 				<Route path="/" element={<Memes />}></Route>
 				<Route path='/add-meme' element={<ContainerAddMeme></ContainerAddMeme>}></Route>
