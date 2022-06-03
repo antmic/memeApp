@@ -3,6 +3,11 @@ import { Link, useNavigate } from 'react-router-dom';
 import classNames from 'classnames';
 import './Main.scss';
 import styles from './styles.module.css';
+import { serverAddressGet1 } from '../../config';
+import { serverAddressGet3 } from '../../config';
+import { serverAddressUpvote } from '../../config';
+import { serverAddressDownvote } from '../../config';
+import { postVote } from '../../helpers';
 
 export function Memes() {
 	const [memes, setMemes] = useState([]);
@@ -13,19 +18,19 @@ export function Memes() {
 	const [allActive, setAllActive] = useState(true);
 	const [hotActive, setHotActive] = useState(false);
 
-	async function getMemes(num) {
-		let result = await fetch('http://127.0.0.1:3002/' + num);
+	async function getMemes(address) {
+		let result = await fetch(address);
 		result = await result.json();
 		setMemes([...memes, ...result.memes]);
 		setTimeout(function () {}, 1000);
 	}
 
 	useEffect(() => {
-		getMemes(3);
+		getMemes(serverAddressGet3);
 	}, []);
 
 	useEffect(() => {
-		getMemes(1);
+		getMemes(serverAddressGet1);
 	}, [numberOfMemes]);
 
 	async function nextMeme() {
@@ -50,17 +55,10 @@ export function Memes() {
 	};
 
 	async function upvote() {
+		const passedMemeIndex = memes[shownMemeIndex]._id;
 		if (greenActive === false) {
 			setGreenActive(true);
-			let result = await fetch('http://127.0.0.1:3002/upvote', {
-				method: 'post',
-				headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
-				body: JSON.stringify({
-					vote: 1,
-					id: memes[shownMemeIndex]._id,
-				}),
-			});
-
+			let result = await postVote(serverAddressUpvote, 1, passedMemeIndex);
 			result = await result.json();
 			let newMemes = [...memes];
 			newMemes[shownMemeIndex].upvotes = result.newVote;
@@ -68,14 +66,7 @@ export function Memes() {
 		} else {
 			//deactivates greenActive and retracts upvote
 			setGreenActive(false);
-			let result = await fetch('http://127.0.0.1:3002/upvote', {
-				method: 'post',
-				headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
-				body: JSON.stringify({
-					vote: -1,
-					id: memes[shownMemeIndex]._id,
-				}),
-			});
+			let result = await postVote(serverAddressUpvote, -1, passedMemeIndex);
 			result = await result.json();
 			let newMemes = [...memes];
 			newMemes[shownMemeIndex].upvotes = result.newVote;
@@ -84,16 +75,10 @@ export function Memes() {
 	}
 
 	async function downvote() {
+		const passedMemeIndex = memes[shownMemeIndex]._id;
 		if (redActive === false) {
 			setRedActive(true);
-			let result = await fetch('http://127.0.0.1:3002/downvote', {
-				method: 'post',
-				headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
-				body: JSON.stringify({
-					vote: 1,
-					id: memes[shownMemeIndex]._id,
-				}),
-			});
+			let result = await postVote(serverAddressDownvote, 1, passedMemeIndex);
 			result = await result.json();
 			let newMemes = [...memes];
 			newMemes[shownMemeIndex].downvotes = result.newVote;
@@ -101,14 +86,7 @@ export function Memes() {
 		} else {
 			//deactivates redActive and retracts upvote
 			setRedActive(false);
-			let result = await fetch('http://127.0.0.1:3002/downvote', {
-				method: 'post',
-				headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
-				body: JSON.stringify({
-					vote: -1,
-					id: memes[shownMemeIndex]._id,
-				}),
-			});
+			let result = await postVote(serverAddressDownvote, -1, passedMemeIndex);
 			result = await result.json();
 			let newMemes = [...memes];
 			newMemes[shownMemeIndex].downvotes = result.newVote;
@@ -186,7 +164,6 @@ export function Memes() {
 					)}
 				</button>
 				<button id='nextBtn' onClick={nextMeme}>
-					{' '}
 					<img src={window.location.origin + '/images/small-right-arrow.png'} alt='right arrow' />
 				</button>
 			</div>
