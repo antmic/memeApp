@@ -1,0 +1,4 @@
+This is a simple meme app, developed in React and Express as a final project for postgraduate studies at Kozminski University.
+It consists of two programs: the server and the app.
+To run it, build both programs, first run the server and then the app.
+The server connects to the MongoDB database. In the app, you can browse memes and add new ones to the database. The program has no protection against adding unwanted records, so please be careful.
